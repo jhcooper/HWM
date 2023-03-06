@@ -1,32 +1,137 @@
 import pandas as pd
 import numpy as np
+from datetime import datetime
+import requests
+import io
+import pytz as pz
 
-def convert_Meters_to_Feet(df):
-    df_converted = df
-    df_converted[' Water Level'] = df_converted[' Water Level'].apply(lambda x: round(x*3.281,3))
-    return df_converted
-def filter_HWM(df, threshold):
-    df_filtered = df[df[' Water Level'] > 4.37]
-    return df_filtered
-def reformat_df(df):
+lewes_threshold = 4.37
+bowers_threshold = 4.50
+reedy_threshold = 4.53
+
+
+def convert_meters_to_feet(df):
+    # Convert and round water levels to feet
+    df[' Water Level'] = df[' Water Level'].apply(lambda x: round(x * 3.281, 3))
+
+def filter_df(df, threshold):
+    # Only include values greater than the threshold
+    df_filtered = df[df[' Water Level'] >= threshold]
+    # Calculate time difference between consecutive rows
+    time_diff = (df_filtered['Date Time'].diff().dt.total_seconds() / 3600)
+    # Create a boolean series (true if not same day or null)
+    isSameDay = (time_diff > 24) | pd.isnull(time_diff)
+    # filter out all values that lie on the same day
+    filtered = df_filtered[isSameDay]
+    return filtered
+
+
+def reformat(df):
+    # Convert to datetime format
     df['Date Time'] = pd.to_datetime(df['Date Time'])
-    df['Date'] = df['Date Time'].dt.date
-    df['Time'] = df['Date Time'].dt.time
-    df.drop('Date Time', inplace=True, axis=1)
-    df.rename(columns={' O or I (for verified)': 'Flag'}, inplace=True)
-    df.reindex(columns=['Date', 'Time', ' Water Level', ' Sigma', 'flag', ' F', ' R', ' L', ' Quality '])
+    # Set local timezone to UTC
+    df['Date Time'] = df['Date Time'].dt.tz_localize('UTC')
+    # Convert timezone to EST
+    df['Date Time'] = df['Date Time'].dt.tz_convert('US/Eastern')
+    # Rename 'O or I (for verified)' column to 'Flag'
+    df.rename(columns={' O or I (for verified)': 'Flag', }, inplace=True)
     return df
+
+def merge_data(df1,df2):
+    df1['Date'] = df1['Date Time'].dt.date  # Separate date from Date Time column
+    df1['Time'] = df1['Date Time'].dt.time  # Separate time from Date Time column
+
+    df2['Date'] = df2['Date Time'].dt.date
+    df2['Time'] = df2['Date Time'].dt.time
+
+    merged_df = pd.merge(df1,df2,on ='Date',how = 'inner')  # Merges df1 and df2, including only days that are the same
+    return merged_df
+
+def prepare_data (filename, threshold):
+    if filename[0:5] == 'https':
+        raw = requests.get(bowers_url)
+        # Skip the header rows and parse the data using pandas
+        df = pd.read_csv(io.StringIO(raw.content.decode('utf-8')), skiprows=26, delimiter='\t')
+        # Remove extraneous row
+        df = df.drop(0)
+        # Rename Water Level and Date Time Columns
+        df.rename(columns={'69431_00065': ' Water Level', 'datetime': 'Date Time'}, inplace=True)
+        # Convert Water Levels from string to number
+        df[' Water Level'] = pd.to_numeric(df[' Water Level'], errors='coerce')
+    else:
+        df = pd.read_csv(filename)
+        convert_meters_to_feet(df)
+    df_formatted = reformat(df)
+    return df_formatted
+
+def locate_parallels (filtered_df , target_df):
+
+    # Separate date and time for filtered_df
+    filtered_df['Date'] = filtered_df['Date Time'].dt.date
+    filtered_df['Time'] = filtered_df['Date Time'].dt.time
+    # Separate date and time for target_df
+    target_df['Date'] = target_df['Date Time'].dt.date
+    target_df['Time'] = target_df['Date Time'].dt.time
+
+    dates = filtered_df['Date']
+    matched_dates = target_df[target_df['Date'].isin(dates)]
+    print(matched_dates)
+
+    time_diff = (matched_dates['Date Time'].diff().dt.total_seconds() / 3600)
+    # Create a boolean series (true if not same day or null)
+    isSameDay = (time_diff > 24) | pd.isnull(time_diff)
+    # filter out all values that lie on the same day
+    filtered = time_diff[isSameDay]
+    return filtered
+
+
 
 
 if __name__ == '__main__':
-    filename: str = '/Users/jh/Documents/HWM_Data/HWM_Lewes_05_2016.csv'
-    df = pd.read_csv(filename)
-    print(df.columns)
-    print(df.head())
-    df = reformat_df(df)
-    print(df.columns)
-    print(df.head())
-    df_converted = convert_Meters_to_Feet(df)
-    print(df_converted.head())
-    # df_filtered = filter_HWM(df)
-    # print(df_filtered.head())
+    lewes_file: str = '/Users/jh/Documents/HWM_Data/HWM_Lewes_05_2016.csv'
+    reedy_file: str = '/Users/jh/Documents/HWM_Data/HWM_ReedyPoint_05_2016.csv'
+    bowers_url: str = 'https://nwis.waterdata.usgs.gov/usa/nwis/uv/?cb_00065=on&format=rdb&site_no=01484085&period=&begin_date=2016-06-01&end_date=2017-05-31'
+
+    lewes_unfiltered = prepare_data(lewes_file, lewes_threshold)
+    reedy_unfiltered = prepare_data(reedy_file, reedy_threshold)
+    bowers_unfiltered = prepare_data(bowers_url, bowers_threshold)
+
+    lewes_filtered = filter_df(lewes_unfiltered,lewes_threshold)
+    reedy_filtered = filter_df(reedy_unfiltered,reedy_threshold)
+    bowers_filtered = filter_df(bowers_unfiltered,bowers_threshold)
+
+    lewes_v_reedy = locate_parallels(reedy_filtered,lewes_unfiltered )
+
+    # print(lewes_v_reedy)
+    # print(reedy_unfiltered)
+    print(bowers_unfiltered)
+    print(bowers_filtered, bowers_threshold)
+    # print('LEWES AT REEDY:')
+    # print(lewes_v_reedy)
+    # lewes_df = pd.read_csv(filename1)
+    # reformat(lewes_df)
+    # convert_meters_to_feet(lewes_df)
+    # lewes_filtered = filter_df(lewes_df,lewes_threshold)
+    # print(lewes_filtered)
+
+    # reedy_df = pd.read_csv(filename2)
+    # reformat(reedy_df)
+    # convert_meters_to_feet(reedy_df)
+    # reedy_filtered = filter_df(reedy_df, reedy_threshold)
+    # merged = retrieve_date(reedy_filtered,lewes_df)
+    # merged.to_csv('merged.csv',index = False)
+
+
+    # bowers_url = 'https://nwis.waterdata.usgs.gov/usa/nwis/uv/?cb_00065=on&format=rdb&site_no=01484085&period=&begin_date=2016-06-01&end_date=2017-05-31'
+    # bowers_raw = requests.get(bowers_url)
+    # Skip the header rows and parse the data using pandas
+    # bowers_df = pd.read_csv(io.StringIO(bowers_raw.content.decode('utf-8')), skiprows=26, delimiter='\t')
+    # Remove extraneous row
+    # bowers_df = bowers_df.drop(0)
+    # Rename Water Level and Date Time Columns
+    # bowers_df.rename(columns={'69431_00065': ' Water Level', 'datetime': 'Date Time'}, inplace=True)
+    # Convert Water Levels from string to number
+    # bowers_df[' Water Level'] = pd.to_numeric(bowers_df[' Water Level'], errors = 'coerce')
+    # reformat(bowers_df)
+    # bowers_filtered = filter_df(bowers_df, -4)
+    # print(bowers_filtered)
