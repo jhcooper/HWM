@@ -92,7 +92,7 @@ def format_NOAA(df):
 
 
 def createReport(begin_date, end_date, stationID, source, fileName, threshold, product):
-    df = getData(stationID, begin_date, end_date, source)
+    df = getData(stationID, begin_date, end_date, source, product)
     unfiltered_path = f'./Unfiltered_Data/{fileName}_unfiltered.csv'
     df.to_csv(unfiltered_path)
     isolated_events_path = f'./Isolated_Events/{fileName}_unfiltered.csv'
@@ -101,5 +101,5 @@ def createReport(begin_date, end_date, stationID, source, fileName, threshold, p
 
 
 if __name__ == '__main__':
-    createReport('20160501', '20161231', '8557380', 'NOAA', 'Lewes_2016', lewes_threshold, 'high_low')
+    createReport('20160501', '20161231', '8557380', 'NOAA', 'Lewes_2016', lewes_threshold, 'water_level')
     createReport('20160501', '20161231', '01484085', 'USGS', 'Bowers_2016', bowers_threshold, '')
