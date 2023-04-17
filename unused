@@ -14,6 +14,61 @@ def locate_parallels(filtered_df, target_df):
     dates = filtered_df['Date']
     matched_dates = target_df[target_df['Date'].isin(dates)]
     print(matched_dates)
+def filter_on_day(df):
+    # Helper function to isolate HWM events from a pre-filtered DataFrame
+    # Parameters:
+    #   df: DataFrame - a filtered csv containing all threshold exceedances
+    # Returns:
+    #   isolated: DataFrame - contains only threshold exceedances that do not occur within the same 24-hour period
+
+    # Get the time difference between adjacent rows in hours
+
+    # Convert timestamp column to datetime type
+    df['Date Time'] = pd.to_datetime(df['Date Time'])
+    df.reset_index(inplace=True)
+    print(df)
+    # Calculate time differences between adjacent rows
+    time_diffs = df['Date Time'].diff()
+
+    # Initialize empty DataFrame
+    maxes = pd.DataFrame(columns=df.columns)
+    print(time_diffs)
+    # Loop through time differences and DataFrame rows
+    for i, time_diff in enumerate(time_diffs):
+        print("NEW ELEMENT")
+        # If adjacent rows fall within 24 hours of each other
+        if time_diff <= pd.Timedelta('48 hours'):
+            print("Same Day")
+            print("Current:" + str(df.loc[i, 'Water Level']))
+            print("Next:" + str(df.loc[i - 1, 'Water Level']))
+            # If the second row's water level is greater
+            if df.loc[i, 'Water Level'] < df.loc[i - 1, 'Water Level']:
+                # Append the second row
+                print("Less")
+                if df.iloc[i - 1].name not in maxes.index:
+                    maxes = maxes.append(df.iloc[i - 1])
+                print("Maxes: ")
+                print(maxes)
+            else:
+                print("Greater")
+                # Remove the previous row with the same index as df.iloc[i-1]
+                maxes = maxes.drop(index=df.iloc[i - 1].name, errors='ignore')
+
+                # Append the first row
+                maxes = maxes.append(df.iloc[i])
+
+                print("Maxes: ")
+                print(maxes)
+        else:
+            # Append the row
+            print("Nothing happened")
+            print("Current: " + str(df.iloc[i]))
+            if (time_diff):
+                maxes = maxes.append(df.iloc[i])
+            print("Maxes: ")
+            print(maxes)
+    print(maxes)
+    return maxes
 
     time_diff = (matched_dates['Date Time'].diff().dt.total_seconds() / 3600)
     # Create a boolean series (true if not same day or null)
