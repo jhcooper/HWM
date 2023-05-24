@@ -2,7 +2,7 @@ import os
 from sites import Site, Delaware_City, Lewes_Breakwater_Harbor, Marcus_Hook, Ocean_City_Inlet, Reedy_Point, \
     Christina_River_Newport, Christina_Wilmington, Del_River_New_Castle, Murderkill_Bowers, Murderkill_Frederica, \
     Indian_River_Rosedale, Indian_River_Bethany, Fred_Hudson_Bethany, Vines_Crossing_Dagsboro, Rehoboth_Bay_Dewey, \
-    Jefferson_Crossing_Bethany, Little_Assawoman_Fenwick, allSites
+    Jefferson_Crossing_Bethany, Little_Assawoman_Fenwick, allSites, usgsSites, noaaSites
 from pandas import DataFrame
 import pandas as pd
 import requests
@@ -43,13 +43,20 @@ def createReport(site: Site, year: str):
 
     threshold = site.threshold
 
+    datum = site.datum
+
+    offset = site.offset
+
     # Predefine Isolated File Path
     isolated_events_path = f'./Isolated_Events/{fileName}_Events.csv'
 
     # Retrieve, Convert, Rename, and Reformat Data
-    df = getData(siteID, begin_date, end_date, source, fileName)
+    df = getData(siteID, datum, offset, begin_date, end_date, source, fileName)
 
-    df = graph(df, fileName, source, threshold)
+    if df is None:
+        return
+
+    # df = graph(df, fileName, source, threshold)
 
     # Filter Data, Creating and saving 'Filtered' and 'Isolated_Events'csv
     if site.threshold != None:
@@ -57,7 +64,7 @@ def createReport(site: Site, year: str):
         filtered.to_csv(isolated_events_path)
 
 
-def getData(stationID: str, begin_date: str, end_date: str, source: str, fileName: str):
+def getData(stationID: str, datum: str, offset: float, begin_date: str, end_date: str, source: str, fileName: str):
     # Function to handle data retrieval from USGS or NOAA
     # Parameters:
     #   begin_date: str - the beginning date of the desired data range (YYYYMMDD)
@@ -73,20 +80,22 @@ def getData(stationID: str, begin_date: str, end_date: str, source: str, fileNam
         # Retrieve the raw data
         url = \
             f'https://nwis.waterdata.usgs.gov/usa/nwis/uv/?cb_00065=on&format=rdb&site_no={stationID}&period=&begin_date={begin_date[0:4]}-{begin_date[4:6]}-{begin_date[6:]}&end_date={end_date[0:4]}-{end_date[4:6]}-{end_date[6:]}'
+        print(url)
         raw = requests.get(url)
         # Skip the header rows and parse the data using pandas
         df = pd.read_csv(io.StringIO(raw.content.decode('utf-8')), comment='#', delimiter='\t')
     else:
         # Retrieve the raw data
-        df = retrieve_NOAA(begin_date, end_date, stationID)
+        df = retrieve_NOAA(begin_date, end_date, datum, stationID)
 
     # Universalize Format, localize, and save the Unfiltered Data
-    df = formatAndSave(df, source, fileName, stationID)
-
+    if df is None:
+        return
+    df = formatAndSave(df, source, offset, datum, fileName, stationID)
     return df
 
 
-def formatAndSave(df: DataFrame, source: str, fileName: str, stationID: str):
+def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileName: str, stationID: str):
     # Helper function to universalize formatting and column naming for USGS and NOAA data, as well as localize timezone
     # to EDT. Creates and saves 'filename_Unfiltered.csv' in 'Unfiltered_Data' folder, which holds all from the given
     # station and date range properly formatted but unfiltered
@@ -98,8 +107,12 @@ def formatAndSave(df: DataFrame, source: str, fileName: str, stationID: str):
     #    df: DataFrame - the csv file of the data, in pandas DF form, now universally formatted and localized
 
     # If the data is coming from USGS:
+    print(df)
+    print(df.columns)
     if source == 'USGS':
-
+        if not any(col.endswith('_00065') for col in df.columns):
+            print("ALERT ALERT ALERT")
+            return
         # create a boolean mask for rows where agency_cd is not equal to "USGS"
         mask = df['agency_cd'] != "USGS"
         # drop the rows where the mask is True
@@ -108,17 +121,21 @@ def formatAndSave(df: DataFrame, source: str, fileName: str, stationID: str):
         df.rename(columns={"site_no": "SiteID", "agency_cd": "Source"}, inplace=True)
 
         # Rename Water level and DateTime Columns
-        df.rename(columns={'69431_00065': 'Water Level', 'datetime': 'Date Time'}, inplace=True)
+        df = df.rename(columns=lambda x: 'Water Level' if x.endswith('_00065') else x)
+        df.rename(columns={'datetime': 'Date Time'}, inplace=True)
 
         # Convert Water Levels from string to number
         df['Water Level'] = pd.to_numeric(df['Water Level'], errors='coerce')
 
         # Remove unneeded columns
-        df.drop(columns={'tz_cd', '69431_00065_cd'}, inplace=True)
+        df.drop(columns={'tz_cd'}, inplace=True)
+        df = df.drop([col for col in df.columns if col.endswith('_00065_cd')], axis=1)
 
         # Perform timezone conversion to EDT
         handleTime(df)
-
+        print("FINISHED MODIFYING")
+        print(df)
+        print(df.columns)
     else:
         # Add Site ID and Source columns
         df["SiteID"] = stationID
@@ -141,12 +158,16 @@ def formatAndSave(df: DataFrame, source: str, fileName: str, stationID: str):
 
         # Perform timezone conversion to EDT
         handleTime(df)
-
+    df['Measured Water Level'] = df['Water Level']
+    df['Water Level'] = df['Water Level'] + offset
+    df['VDatum'] = datum
+    df['Offset'] = offset
     # Revert indexing from DateTime to linear numeric (0,1,2,3,...)
     df.index = pd.RangeIndex(start=0, stop=len(df))
 
     # Add unique Identifier to each data entry
     df['Identifier'] = df["SiteID"] + "-" + fileName[-4:] + "-" + df.reset_index().index.astype(str)
+    print(f"SAVED {fileName}")
     df.to_csv(f"./Unfiltered_Data/{fileName}_Unfiltered.csv", index=False)
     return df
 
@@ -190,7 +211,8 @@ def graph(df: DataFrame, fileName: str, source: str, threshold: float):
     ax.set_xlabel('Date')
 
     # Add Threshold Line
-    plt.axhline(y=threshold, color='r', linestyle='-')
+    if threshold != None:
+        plt.axhline(y=threshold, color='r', linestyle='-')
 
     # Add Legend
     ax.legend(loc='lower left', title='Key', labels=['Water Level', 'Threshold'])
@@ -349,7 +371,7 @@ def mergeEvents(year: str):
 
 def createYearlyReport(year):
     year_str = str(year)
-    for site in allSites:
+    for site in noaaSites:
         print(site.name)
         createReport(site, year_str)
 
@@ -363,16 +385,18 @@ def createYearlyReport(year):
 
     isolated = mergeEvents(year_str)
 
-    mergeOnDate(unfiltered, isolated)
+    mergeOnDate(unfiltered, isolated, year)
 
 
 if __name__ == '__main__':
     # for year in range(2016, 2024):
     #     print(year)
     #     createYearlyReport(year)
-    createReport(Delaware_City, 2016)
-    #
-    # createReport(Lewes_Breakwater_Harbor, 2016)
+    # createReport(Delaware_City, 2016)
+    # createYearlyReport(2016)
+    # createYearlyReport(2016)
+    for i in range(2016, 2023):
+        createYearlyReport(i)
     # createReport(Reedy_Point, 2016)
     # createReport(Murderkill_Bowers, 2016)
     #
