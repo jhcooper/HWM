@@ -2,7 +2,7 @@ import os
 from pandas import DataFrame
 import pandas as pd
 from datetime import timedelta
-from formatting import finalFormating
+from formatting import finalFormatting
 
 
 def mergeOnDate(unfiltered: DataFrame, isolated: DataFrame, year: str):

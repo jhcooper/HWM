@@ -50,6 +50,5 @@ def retrieve_NOAA(begin_date, end_date, datum, stationID):
     try:
         response = tempStation.get_data(begin_date, end_date, product, datum, bin_num, interval, units, time_zone)
     except ValueError as e:
-        print(f"No data was found for station {stationID}: {e}")
         return None
     return response
