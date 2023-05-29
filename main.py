@@ -1,72 +1,56 @@
-import os
-from mergers import mergeUnfiltered, mergeEvents, mergeOnDate
-from retrieval import getData
-from filtering import filter_df, filter_on_day
+from report import createYearlyReport
 from sites import Site, Delaware_City, Lewes_Breakwater_Harbor, Marcus_Hook, Ocean_City_Inlet, Reedy_Point, \
     Christina_River_Newport, Christina_Wilmington, Del_River_New_Castle, Murderkill_Bowers, Murderkill_Frederica, \
     Indian_River_Rosedale, Indian_River_Bethany, Fred_Hudson_Bethany, Vines_Crossing_Dagsboro, Rehoboth_Bay_Dewey, \
     Jefferson_Crossing_Bethany, Little_Assawoman_Fenwick, allSites, usgsSites, noaaSites
 
-
-def createReport(site: Site, year: str):
-    # Master function to create and save Unfiltered, Filtered, and Isolated Events csvs as well as a png plot of threshold
-    # exceedance for USGS or NOAA Water Level data
-    # Parameters:
-    #   begin_date: str - the beginning date of the desired data range (YYYYMMDD)
-    #   end_date: str - the ending date of the desired data range (YYYYMMDD)
-    #   stationID: str - the station ID of the desired station
-    #   source: str - the data source (USGS or NOAA)
-    #   fileName: str - the location name and year (location_year)
-    #   threshold: float - the threshold for a HWM at the target station
-    #   product: str - *FOR NOAA DATA ONLY* the product being retrieved (water_level or high_low)
-    # No Returns
-
-    # Create Needed Parameters
-    year_str = str(year)
-    begin_date = year_str + '0101'
-    end_date = year_str + '1231'
-    siteID = site.siteID
-    source = site.source
-    fileName = site.name + '_' + year_str
-    threshold = site.threshold
-    datum = site.datum
-    offset = site.offset
-
-    # Predefine Isolated File Path
-    isolated_events_path = f'./Isolated_Events/{fileName}_Events.csv'
-
-    # Retrieve, Convert, Rename, and Reformat Data
-    df = getData(siteID, datum, offset, begin_date, end_date, source, fileName, year)
-
-    if df is None:
-        return
-
-    # df = graph(df, fileName, source, threshold)
-
-    # Filter Data, Creating and saving 'Filtered' and 'Isolated_Events'csv
-    if site.threshold != None:
-        filtered = filter_df(df, threshold, fileName)
-        filtered.to_csv(isolated_events_path)
-
-
-def createYearlyReport(year: int, sites: [Site] = allSites, saveFiles: bool = False):
-    for site in sites:
-        print(site.name)
-        createReport(site, year)
-
-    unfiltered = mergeUnfiltered(year)
-
-    folder_path = f'./Unfiltered_Data/{year}'
-
-    for file_name in os.listdir(folder_path):
-        if file_name.endswith(f'{year}.csv'):
-            os.remove(os.path.join(folder_path, file_name))
-
-    isolated = mergeEvents(year)
-
-    mergeOnDate(unfiltered, isolated, year)
-
-
 if __name__ == '__main__':
-    for i in range(2016, 2023):
-        createYearlyReport(i, noaaSites)
+    if __name__ == '__main__':
+        # Prompt for year input
+        print("Welcome to the HWMDB report generator. To generate a report, please follow the following steps:")
+        while True:
+            try:
+                year = int(input("Enter a year (1962-Present): "))
+                if 1962 <= year <= 2023:
+                    break
+                else:
+                    print("Invalid year. Please enter a year between 1962 and 2023.")
+            except ValueError:
+                print("Invalid input. Please enter a valid year.")
+
+        # Prompt for plotting input
+        while True:
+            plot_input = input("Do you want plots? (yes/no): ").lower()
+            if plot_input in ["yes", "no", ""]:
+                plotting = plot_input == "yes"
+                break
+            else:
+                print("Invalid input. Please enter 'yes' or 'no'.")
+
+        # Prompt for keep input
+        while True:
+            keep_input = input(
+                "Which temporary files do you want to keep? (A for All/N for None/I for the Isolated Events/Enter for default (All)): ").upper()
+            if keep_input in ["A", "N", "I", ""]:
+                keep = keep_input
+                break
+            else:
+                print("Invalid input. Please enter 'A', 'N', 'I', or press enter.")
+
+        # Prompt for sites input
+        while True:
+            print("Active Sites:")
+            print(site.name for site in allSites)
+            sites_input = input(
+                "Enter a list of site names (comma-separated) from the available sites, or press enter for all sites: ")
+            if sites_input == "":
+                sites = noaaSites
+                break
+            else:
+                sites = [s.strip() for s in sites_input.split(",")]
+                if all(site in allSites for site in sites):
+                    break
+                else:
+                    print("Invalid site names. Please enter site names from the provided list.")
+
+        createYearlyReport(year, plotting, keep, sites)

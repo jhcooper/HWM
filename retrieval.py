@@ -22,7 +22,6 @@ def getData(stationID: str, datum: str, offset: float, begin_date: str, end_date
         # Retrieve the raw data
         url = \
             f'https://nwis.waterdata.usgs.gov/usa/nwis/uv/?cb_00065=on&format=rdb&site_no={stationID}&period=&begin_date={begin_date[0:4]}-{begin_date[4:6]}-{begin_date[6:]}&end_date={end_date[0:4]}-{end_date[4:6]}-{end_date[6:]}'
-        print(url)
         raw = requests.get(url)
         # Skip the header rows and parse the data using pandas
         df = pd.read_csv(io.StringIO(raw.content.decode('utf-8')), comment='#', delimiter='\t')
@@ -47,7 +46,6 @@ def retrieve_NOAA(begin_date, end_date, datum, stationID):
     units = "english"
     time_zone = "lst"
     url = f'http://tidesandcurrents.noaa.gov/api/datagetter?begin_date={begin_date}&end_date={end_date}&station={stationID}&product={product}&datum={datum}&units={units}&time_zone={time_zone}&application=web_services&format=csv'
-    print(url)
     tempStation = nc.Station(stationID)
     try:
         response = tempStation.get_data(begin_date, end_date, product, datum, bin_num, interval, units, time_zone)

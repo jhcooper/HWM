@@ -1,9 +1,10 @@
 from pandas import DataFrame
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import os
 
 
-def graph(df: DataFrame, fileName: str, source: str, threshold: float):
+def graph(df: DataFrame, fileName: str, source: str, threshold: float, year: int):
     # Generates a plot representation of water level at a site over a period of time compared to that site's threshold.
     # The generated plot is saved under 'filename_plot.png' in the 'Plots' Folder
     # Also makes a call to formatAndSave to first format the data and save the unfiltered data before manipulation.
@@ -18,6 +19,9 @@ def graph(df: DataFrame, fileName: str, source: str, threshold: float):
     date = df["Date Time"]
     value = df["Water Level"]
 
+    folder_path = f"./Plots/{year}"
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
     # Create Plot Object
     fig, ax = plt.subplots(figsize=(8, 6))
 
@@ -52,6 +56,6 @@ def graph(df: DataFrame, fileName: str, source: str, threshold: float):
     fig.autofmt_xdate()
 
     # Export Final Graph as a png
-    plt.savefig(f"./Plots/{fileName}_Plot.png")
+    plt.savefig(f"./Plots/{year}/{fileName}_Plot.png")
     plt.close()
     return df

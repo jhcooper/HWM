@@ -1,8 +1,9 @@
 from pandas import DataFrame
 import pandas as pd
+import os
 
 
-def filter_df(df: DataFrame, threshold: float, fileName: str):
+def createFiltered(df: DataFrame, threshold: float, fileName: str, year: int):
     # Creates and saves a csv that contains only water level data from the provided site DataFrame that exceeds the
     # site's threshold. The csv is saved as 'filename_filtered.csv' in the 'Filtered_Data' folder.
     # Additionally, makes a call to filter_on_day to isolate HWM events that are separated by more than a day
@@ -16,13 +17,16 @@ def filter_df(df: DataFrame, threshold: float, fileName: str):
     # Only include values greater than the threshold
     df_filtered = df[df['Water Level'] >= threshold]
     # Calculate time difference between consecutive rows
-    df_filtered.to_csv(f"./Filtered_Data/{fileName}_filtered.csv", index=False)
+    folder_path = f"./Filtered_Data/{year}"
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
 
-    df_isolated = filter_on_day(df_filtered)
-    return df_isolated
+    df_filtered.to_csv(f"./Filtered_Data/{year}/{fileName}_filtered.csv", index=False)
+
+    createIsolated(df_filtered, year, fileName)
 
 
-def filter_on_day(df: DataFrame):
+def createIsolated(df: DataFrame, year: int, fileName: str):
     # Helper function to isolate HWM events from a pre-filtered DataFrame
     # Parameters:
     #   df: DataFrame - a filtered csv containing all threshold exceedances
@@ -38,4 +42,9 @@ def filter_on_day(df: DataFrame):
     # filter out all values that lie on the same day
     isolated = df[isSameDay];
 
-    return isolated
+    # Predefine Isolated File Path
+    folder_path = f"./Isolated_Events/{year}"
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    isolated.to_csv(f"./Isolated_Events/{year}/{fileName}.csv")

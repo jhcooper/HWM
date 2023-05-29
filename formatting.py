@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 
-def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileName: str, stationID: str, year: str):
+def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileName: str, stationID: str, year: int):
     # Helper function to universalize formatting and column naming for USGS and NOAA data, as well as localize timezone
     # to EDT. Creates and saves 'filename_Unfiltered.csv' in 'Unfiltered_Data' folder, which holds all from the given
     # station and date range properly formatted but unfiltered
@@ -15,11 +15,13 @@ def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileNam
     #    df: DataFrame - the csv file of the data, in pandas DF form, now universally formatted and localized
 
     # If the data is coming from USGS:
-    print(df)
-    print(df.columns)
+    folder_path = f"./Unfiltered_Data/{year}"
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
     if source == 'USGS':
         if not any(col.endswith('_00065') for col in df.columns):
-            print("ALERT ALERT ALERT")
+            print("No Data Available")
             return
         # create a boolean mask for rows where agency_cd is not equal to "USGS"
         mask = df['agency_cd'] != "USGS"
@@ -41,17 +43,15 @@ def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileNam
 
         # Perform timezone conversion to EDT
         handleTime(df)
-        print("FINISHED MODIFYING")
-        print(df)
-        print(df.columns)
+
     else:
         # Add Site ID and Source columns
         df["SiteID"] = stationID
         df["Source"] = source
 
         # Fill missing High-High values and dates with High counterparts
-        df['date_time_HH'].fillna(df['date_time_H'], inplace=True)
-        df['HH_water_level'].fillna(df['H_water_level'], inplace=True)
+        df['date_time_HH'].fillna(df['date_time_H'].combine_first(df['date_time_L']), inplace=True)
+        df['HH_water_level'].fillna(df['H_water_level'].combine_first(df['L_water_level']), inplace=True)
 
         # Rename Water level and DateTime Columns
         df.rename(columns={'date_time_HH': 'Date Time', 'HH_water_level': 'Water Level'}, inplace=True)
@@ -67,7 +67,7 @@ def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileNam
         # Perform timezone conversion to EDT
         handleTime(df)
     df['Measured Water Level'] = df['Water Level']
-    df['Water Level'] = df['Water Level'] + offset
+    df['Water Level'] = df['Water Level'].apply(lambda x: round(x + offset, 2))
     df['VDatum'] = datum
     df['Offset'] = offset
     # Revert indexing from DateTime to linear numeric (0,1,2,3,...)
@@ -75,10 +75,6 @@ def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileNam
 
     # Add unique Identifier to each data entry
     df['Identifier'] = df["SiteID"] + "-" + fileName[-4:] + "-" + df.reset_index().index.astype(str)
-    print(f"SAVED {fileName}")
-    folder_path = f"./Unfiltered_Data/{year}"
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
     df.to_csv(f"./Unfiltered_Data/{year}/{fileName}_Unfiltered.csv", index=False)
     return df
 
@@ -99,3 +95,17 @@ def handleTime(df):
     # Separate date and time
     df['Date'] = df['Date Time'].dt.date
     df['Time'] = df['Date Time'].dt.time
+
+
+def finalFormatting(df: DataFrame):
+    # Rename columns
+    df = df.rename(columns={'Water Level': 'Adjusted Water Level'})
+
+    # Delete unnecessary columns
+    df = df.drop(columns=['Date Time', 'Identifier'])
+
+    # Reorder columns
+    columns = ['Date', 'Time', 'SiteID', 'Source', 'Measured Water Level', 'Offset', 'Adjusted Water Level', 'VDatum']
+    df = df[columns]
+
+    return df

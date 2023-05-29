@@ -1,16 +1,8 @@
 import os
-from sites import Site, Delaware_City, Lewes_Breakwater_Harbor, Marcus_Hook, Ocean_City_Inlet, Reedy_Point, \
-    Christina_River_Newport, Christina_Wilmington, Del_River_New_Castle, Murderkill_Bowers, Murderkill_Frederica, \
-    Indian_River_Rosedale, Indian_River_Bethany, Fred_Hudson_Bethany, Vines_Crossing_Dagsboro, Rehoboth_Bay_Dewey, \
-    Jefferson_Crossing_Bethany, Little_Assawoman_Fenwick, allSites, usgsSites, noaaSites
 from pandas import DataFrame
 import pandas as pd
-import requests
-import io
-from retrieval import retrieve_NOAA
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 from datetime import timedelta
+from formatting import finalFormating
 
 
 def mergeOnDate(unfiltered: DataFrame, isolated: DataFrame, year: str):
@@ -46,8 +38,8 @@ def mergeOnDate(unfiltered: DataFrame, isolated: DataFrame, year: str):
     result = result.sort_values(by='Date Time', ascending=True)
     result.reset_index(drop=True, inplace=True)
 
-    year_str = str(year)
-    result.to_csv(f"./Yearly_Reports/{year_str}_Report.csv")
+    result = finalFormatting(result)
+    result.to_csv(f"./Yearly_Reports/{year}_Report.csv")
 
 
 def mergeUnfiltered(year: str):
@@ -69,13 +61,17 @@ def mergeUnfiltered(year: str):
     merged_df['Date Time'] = pd.to_datetime(merged_df['Date Time'])
     merged_df['Time'] = pd.to_datetime(merged_df['Time'])
 
-    merged_df.to_csv(f"./Merged_Data/Unfiltered_Merged_{year}.csv")
+    folder_path = f"./Merged_Data/{year}"
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    merged_df.to_csv(f"./Merged_Data/{year}/Unfiltered_Merged_{year}.csv")
 
     return merged_df
 
 
 def mergeEvents(year: str):
-    folder_path = f"./Isolated_Events"
+    folder_path = f"./Isolated_Events/{year}"
 
     # Create A list of All Unfiltered CSVS
     csv_files = [f for f in os.listdir(folder_path) if f.endswith('.csv')]
@@ -94,6 +90,9 @@ def mergeEvents(year: str):
     merged_df['Date Time'] = pd.to_datetime(merged_df['Date Time'])
     merged_df['Time'] = pd.to_datetime(merged_df['Time'])
 
-    merged_df.to_csv(f"./Merged_Data/Isolated_Events_Merged_{year}.csv")
+    file_path = f"./Merged_Data/{year}"
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    merged_df.to_csv(f"./Merged_Data/{year}/Isolated_Events_Merged_{year}.csv")
 
     return merged_df
