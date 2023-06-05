@@ -1,5 +1,3 @@
-Certainly! Here's a README section that describes the purpose and usage of the main code:
-
 ## HWMDB Report Generator
 
 The HWMDB Report Generator is a Python script that generates a yearly report based on user inputs. It utilizes
