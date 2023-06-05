@@ -2,7 +2,8 @@ Certainly! Here's a README section that describes the purpose and usage of the m
 
 ## HWMDB Report Generator
 
-The HWMDB Report Generator is a Python script that generates a yearly report based on user inputs. It utilizes the `createYearlyReport` function from the `report` module to generate the report.
+The HWMDB Report Generator is a Python script that generates a yearly report based on user inputs. It utilizes
+the `createYearlyReport` function from the `report` module to generate the report.
 
 ### Usage
 
@@ -16,13 +17,18 @@ The HWMDB Report Generator is a Python script that generates a yearly report bas
 
 5. Follow the prompts to provide the required inputs:
 
-   - Enter a year (1962-Present): Enter the desired year for the report. The year must be between 1962 and the current year.
+    - Enter a year (1962-Present): Enter the desired year for the report. The year must be between 1962 and the current
+      year.
 
-   - Do you want plots? (yes/no): Specify whether you want to include plots in the report. Enter "yes" or "no".
+    - Do you want plots? (yes/no): Specify whether you want to include plots in the report. Enter "yes" or "no".
 
-   - Which temporary files do you want to keep? (A for All/N for None/I for the Isolated Events/Enter for default (All)): Choose which temporary files to keep after generating the report. Enter "A" to keep all files, "N" to keep none, or "I" to keep only the isolated events.
+    - Which temporary files do you want to keep? (A for All/N for None/I for the Isolated Events/Enter for default (
+      All)): Choose which temporary files to keep after generating the report. Enter "A" to keep all files, "N" to keep
+      none, or "I" to keep only the isolated events.
 
-   - Enter a list of site names (comma-separated) from the available sites, or press enter for all sites: Enter a comma-separated list of site names to include in the report. If no input is provided, the report will include all available sites.
+    - Enter a list of site names (comma-separated) from the available sites, or press enter for all sites: Enter a
+      comma-separated list of site names to include in the report. If no input is provided, the report will include all
+      available sites.
 
 6. The report will be generated based on the provided inputs and saved to the specified location.
 
@@ -44,9 +50,11 @@ The script relies on the following modules:
 
 - `datetime.timedelta`: Represents a duration or difference between two dates or times, used for time calculations.
 
-- `noaa_coops`: A Python library for accessing NOAA CO-OPS (Center for Operational Oceanographic Products and Services) data, used for retrieving data from NOAA CO-OPS API.
+- `noaa_coops`: A Python library for accessing NOAA CO-OPS (Center for Operational Oceanographic Products and Services)
+  data, used for retrieving data from NOAA CO-OPS API.
 
-Please make sure to install these dependencies before running the script. You can use `pip` to install the required packages:
+Please make sure to install these dependencies before running the script. You can use `pip` to install the required
+packages:
 
 ```
 pip install pandas matplotlib noaa_coops
@@ -62,11 +70,13 @@ Feel free to modify and use the code according to your needs.
 
 ### Acknowledgments
 
-This project was developed as part of a larger system and is based on the work of the contributors to the HWMDB (High Water Mark Database) project.
+This project was developed as part of a larger system and is based on the work of the contributors to the HWMDB (High
+Water Mark Database) project.
 The HWMDB is project through University of Delaware's Center for Environmental Monitoring & Analysis (CEMA).
 
-For more information about CEMA and the HWMDB project, visit [hwmdb.org](https://cema.udel.edu/).
+For more information about CEMA and the HWMDB project, visit [cema.udel.edu](https://cema.udel.edu/).
 
-If you encounter any issues or have any questions, please feel free to [open an issue](https://github.com/jhcooper/HWM/issues) on the GitHub repository.
+If you encounter any issues or have any questions, please feel free
+to [open an issue](https://github.com/jhcooper/HWM/issues) on the GitHub repository.
 
 Thank you for using the HWMDB Report Generator!

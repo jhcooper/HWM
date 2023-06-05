@@ -1,5 +1,28 @@
 class Site:
+    """
+    Represents a monitoring site with specific attributes.
+
+    Attributes:
+      siteID (str): The unique identifier for the site.
+      source (str): The source of the site data (e.g., NOAA or USGS).
+      name (str): The name of the site.
+      threshold (float, optional): A threshold value specific to the site (if applicable).
+      offset (float): The offset value for the site.
+      datum (str): The datum associated with the site.
+    """
+
     def __init__(self, siteID: str, source: str, name: str, datum: str, offset: float, threshold: float = None):
+        """
+        Initializes a new instance of the Site class.
+
+        Parameters:
+          siteID (str): The unique identifier for the site.
+          source (str): The source of the site data (e.g., NOAA or USGS).
+          name (str): The name of the site.
+          datum (str): The datum associated with the site.
+          offset (float): The offset value for the site.
+          threshold (float, optional): A threshold value specific to the site (if applicable).
+        """
         self.siteID = siteID
         self.source = source
         self.name = name
@@ -42,4 +65,5 @@ usgsSites = [
     Indian_River_Rosedale, Indian_River_Bethany, Fred_Hudson_Bethany, Vines_Crossing_Dagsboro,
     Rehoboth_Bay_Dewey,
     Jefferson_Crossing_Bethany, Little_Assawoman_Fenwick]
+
 noaaSites = [Delaware_City, Lewes_Breakwater_Harbor, Marcus_Hook, Ocean_City_Inlet, Reedy_Point, Murderkill_Bowers]

@@ -5,16 +5,18 @@ import os
 
 
 def graph(df: DataFrame, fileName: str, source: str, threshold: float, year: int):
-    # Generates a plot representation of water level at a site over a period of time compared to that site's threshold.
-    # The generated plot is saved under 'filename_plot.png' in the 'Plots' Folder
-    # Also makes a call to formatAndSave to first format the data and save the unfiltered data before manipulation.
-    # Parameters:
-    #   df: DataFrame - the csv file of the data, in pandas DF form
-    #   source: str - the data source (USGS or NOAA)
-    #   threshold: float - the threshold for a HWM at the target station
-    # Returns:
-    #    df: DataFrame - the csv file of the data, in pandas DF form, now universally formatted and localized
+    """
+    Generates a plot representation of water level at a site over a period of time compared to that site's threshold.
+    The generated plot is saved under 'filename_plot.png' in the 'Plots' Folder
+    Also makes a call to formatAndSave to first format the data and save the unfiltered data before manipulation.
 
+    Parameters:
+      df (DataFrame): the csv file of the data, in pandas DF form
+      source (str): the data source (USGS or NOAA)
+      threshold (float): the threshold for a HWM at the target station
+    Returns:
+       df (DataFrame): the csv file of the data, in pandas DF form, now universally formatted and localized
+    """
     # Isolate DateTime as 'date' and corresponding water level as 'WL'
     date = df["Date Time"]
     value = df["Water Level"]

@@ -1,14 +1,22 @@
 import os
 import shutil
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from datetime import timedelta
-import noaa_coops as nc
 
 
 def deleteTempFolders(keep: str, year: int):
+    """
+    Deletes temporary folders and files based on the specified keep command and year.
+
+    Parameters:
+      keep (str): The keep command specifying which folders to keep. Valid values are 'A' (keep all), 'N' (keep none),
+                    or 'I' (keep isolated events).
+      year (int): The year for which the temporary folders should be deleted.
+
+    Returns:
+      None
+    """
+
     command = keep.upper()
+    # Determine the proper files to keep
     if command == "A":
         return
     elif command == "N":
