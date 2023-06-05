@@ -1,7 +1,12 @@
 ## HWMDB Report Generator
 
-The HWMDB Report Generator is a Python script that generates a yearly report based on user inputs. It utilizes
-the `createYearlyReport` function from the `report` module to generate the report.
+The HWMDB Report Generator is a Python script that generates a yearly report of the dates and water level data of all
+High Water Mark Events in Delaware. A High Water Mark Event is identified based off of a water level threshold
+excedance at one of the following sites: Lewes Breakwater Harbor, Reedy Point, or Murderkill Bowers. Once one of these
+events is identified, the water level data from the rest of the sites across the State for the corresponding time window
+is sourced and added to the final report. This tool also provides individual site plotting capabilities, enabling the
+user to generate yearly charts for each site in order to easily visualize water levels across the State. Data for these
+reports and plots is sourced from the NOAA and USGS APIs.
 
 ### Usage
 
