@@ -1,5 +1,10 @@
 import os
 import shutil
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from datetime import timedelta
+import noaa_coops as nc
 
 
 def deleteTempFolders(keep: str, year: int):
