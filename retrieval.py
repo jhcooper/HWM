@@ -9,13 +9,13 @@ def getData(stationID: str, datum: str, offset: float, begin_date: str, end_date
             year: int):
     # Function to handle data retrieval from USGS or NOAA
     # Parameters:
-    #   begin_date: str - the beginning date of the desired data range (YYYYMMDD)
-    #   end_date: str - the ending date of the desired data range (YYYYMMDD)
-    #   stationID: str - the station ID of the desired station
-    #   source: str - the data source (USGS or NOAA)
-    #   product: str - *FOR NOAA DATA ONLY* the product being retrieved (water_level or high_low)
+    #   begin_date (str): the beginning date of the desired data range (YYYYMMDD)
+    #   end_date (str): the ending date of the desired data range (YYYYMMDD)
+    #   stationID (str): the station ID of the desired station
+    #   source (str): the data source (USGS or NOAA)
+    #   product (str): *FOR NOAA DATA ONLY* the product being retrieved (water_level or high_low)
     # Returns:
-    #    df: DataFrame - the csv file of the data, in pandas DF form
+    #    df (DataFrame): the csv file of the data, in pandas DF form
 
     # If the data is coming from USGS:
     if source == 'USGS':
@@ -37,6 +37,18 @@ def getData(stationID: str, datum: str, offset: float, begin_date: str, end_date
 
 
 def retrieve_NOAA(begin_date, end_date, datum, stationID):
+    """
+    Retrieves NOAA data for a specific station and time period.
+
+    Parameters:
+      begin_date (str): The start date in the format 'YYYYMMDD'.
+      end_date (str): The end date in the format 'YYYYMMDD'.
+      datum (str): The datum for the data (e.g., 'MLLW', 'NAVD', 'IGLD').
+      stationID (str): The ID of the NOAA station.
+
+    Returns:
+      DataFrame or None: The retrieved data as a pandas DataFrame if successful, None otherwise.
+    """
     begin_date = begin_date
     end_date = end_date
     product = 'high_low'
@@ -46,7 +58,9 @@ def retrieve_NOAA(begin_date, end_date, datum, stationID):
     units = "english"
     time_zone = "lst"
     url = f'http://tidesandcurrents.noaa.gov/api/datagetter?begin_date={begin_date}&end_date={end_date}&station={stationID}&product={product}&datum={datum}&units={units}&time_zone={time_zone}&application=web_services&format=csv'
+
     tempStation = nc.Station(stationID)
+
     try:
         response = tempStation.get_data(begin_date, end_date, product, datum, bin_num, interval, units, time_zone)
     except ValueError as e:

@@ -6,6 +6,19 @@ from formatting import finalFormatting
 
 
 def mergeOnDate(unfiltered: DataFrame, isolated: DataFrame, year: str):
+    """
+    Merges data from an unfiltered and isolated dataframe based on the date. Uses a scrolling time window to identify
+    the unfiltered data's highest value for each two-day period surrounding each date in the isolated dataframe. The
+    merged data is saved in the Yearly_Reports folder as {year}_Report.csv.
+
+    Parameters:
+        unfiltered (DataFrame): The unfiltered dataframe containing data for all sites and dates.
+        isolated (DataFrame): The isolated dataframe containing data for isolated events.
+        year (str): The year for which the data is being merged.
+
+    Returns:
+        None
+    """
     result = pd.DataFrame(columns=isolated.columns)
 
     # Get a list of all site identifiers in the unfiltered dataframe
@@ -43,6 +56,16 @@ def mergeOnDate(unfiltered: DataFrame, isolated: DataFrame, year: str):
 
 
 def mergeUnfiltered(year: str):
+    """
+      Merges all the unfiltered data for every site for a single year into a single csv. The
+      merged data is saved in the Merged_Data/{year} folder as Unfiltered_Merged_{year}.csv
+
+      Parameters:
+          year (str): the year of the desired data
+
+      Returns:
+          None
+      """
     folder_path = f"./Unfiltered_Data/{year}"
 
     # Create A list of All Unfiltered CSVS
@@ -57,20 +80,34 @@ def mergeUnfiltered(year: str):
 
     # Merge into a single DataFrame
     merged_df = pd.concat(data_frames, ignore_index=True)
+
+    # Revert the 'Date', 'Time', and 'Date Time' columns to Date Time format
     merged_df['Date'] = pd.to_datetime(merged_df['Date'])
     merged_df['Date Time'] = pd.to_datetime(merged_df['Date Time'])
     merged_df['Time'] = pd.to_datetime(merged_df['Time'])
 
+    # Create a yearly folder if needed
     folder_path = f"./Merged_Data/{year}"
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
+    # Save the merged data
     merged_df.to_csv(f"./Merged_Data/{year}/Unfiltered_Merged_{year}.csv")
 
     return merged_df
 
 
 def mergeEvents(year: str):
+    """
+      Merges all the isolated data for Lewes, Bowers, and Reedy Point for a single year into a single csv. The
+      merged data is saved in the Merged_Data/{year} folder as Isolated_Events_Merged_{year}.csv
+
+      Parameters:
+          year (str): the year of the desired data
+
+      Returns:
+          None
+      """
     folder_path = f"./Isolated_Events/{year}"
 
     # Create A list of All Unfiltered CSVS

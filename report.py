@@ -8,17 +8,21 @@ from sites import Site, allSites
 
 
 def createReport(site: Site, plotting: bool, year: str):
-    # Master function to create and save Unfiltered, Filtered, and Isolated Events csvs as well as a png plot of threshold
-    # exceedance for USGS or NOAA Water Level data
-    # Parameters:
-    #   begin_date: str - the beginning date of the desired data range (YYYYMMDD)
-    #   end_date: str - the ending date of the desired data range (YYYYMMDD)
-    #   stationID: str - the station ID of the desired station
-    #   source: str - the data source (USGS or NOAA)
-    #   fileName: str - the location name and year (location_year)
-    #   threshold: float - the threshold for a HWM at the target station
-    #   product: str - *FOR NOAA DATA ONLY* the product being retrieved (water_level or high_low)
-    # No Returns
+    """
+    Master function to create and save Unfiltered, Filtered, and Isolated Events csvs as well as a png plot of threshold
+    exceedance for USGS or NOAA Water Level data
+
+    Parameters:
+      begin_date (str): the beginning date of the desired data range (YYYYMMDD)
+      end_date (str): the ending date of the desired data range (YYYYMMDD)
+      stationID (str): the station ID of the desired station
+      source (str): the data source (USGS or NOAA)
+      fileName (str): the location name and year (location_year)
+      threshold (float): the threshold for a HWM at the target station
+      product (str):  *FOR NOAA DATA ONLY* the product being retrieved (water_level or high_low)
+    Returns:
+      None
+    """
 
     # Create Needed Parameters
     year_str = str(year)
@@ -44,13 +48,33 @@ def createReport(site: Site, plotting: bool, year: str):
 
 
 def createYearlyReport(year: int, plotting: bool = False, keep: str = "A", sites: [Site] = allSites):
+    """
+    Generates a yearly report for the specified year.
+
+    Parameters:
+      year (int): The year for which the report is generated.
+      plotting (bool, optional): Specifies whether to include plots in the report. Default is False.
+      keep (str, optional): Specifies which temporary files to keep. Valid values are 'A' (keep all),
+            'N' (keep none), or 'I' (keep isolated events). Default is 'A'.
+      sites (List[Site], optional): A list of Site objects representing the sites to include in the report.
+            Default is allSites, which includes all available sites.
+
+    Returns:
+      None
+    """
     for site in sites:
         print("Processing " + site.name + " " + str(year))
+        # Generate individual reports for each site
         createReport(site, plotting, year)
 
+    # Merge unfiltered data for the year
     unfiltered = mergeUnfiltered(year)
-
+    # Merge isolated events for the year
     isolated = mergeEvents(year)
+    # Perform date matching for all sites
     mergeOnDate(unfiltered, isolated, year)
+    # Delete temporary folders based on keep command
     deleteTempFolders(keep, year)
+
     print("Done Processing " + str(year))
+

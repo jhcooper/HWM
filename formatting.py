@@ -4,16 +4,18 @@ import os
 
 
 def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileName: str, stationID: str, year: int):
-    # Helper function to universalize formatting and column naming for USGS and NOAA data, as well as localize timezone
-    # to EDT. Creates and saves 'filename_Unfiltered.csv' in 'Unfiltered_Data' folder, which holds all from the given
-    # station and date range properly formatted but unfiltered
-    # Parameters:
-    #   df: DataFrame - the csv file of the data, in pandas DF form
-    #   source: str - the data source (USGS or NOAA)
-    #   fileName: str - the location name and year (location_year)
-    # Returns:
-    #    df: DataFrame - the csv file of the data, in pandas DF form, now universally formatted and localized
+    """
+    Helper function to universalize formatting and column naming for USGS and NOAA data, as well as localize timezone
+    to EDT. Creates and saves 'filename_Unfiltered.csv' in 'Unfiltered_Data' folder, which holds all from the given
+    station and date range properly formatted but unfiltered
 
+    Parameters:
+      df (DataFrame): the csv file of the data, in pandas DF form
+      source (str): the data source (USGS or NOAA)
+      fileName (str):  the location name and year (location_year)
+    Returns:
+       df (DataFrame): the csv file of the data, in pandas DF form, now universally formatted and localized
+    """
     # If the data is coming from USGS:
     folder_path = f"./Unfiltered_Data/{year}"
     if not os.path.exists(folder_path):
@@ -80,11 +82,14 @@ def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileNam
 
 
 def handleTime(df):
-    # Helper function to convert water level data from UTC to local timezone (EDT)
-    # Parameters:
-    #   df: DataFrame - a formatted DF containing water level or high low data
-    # No Returns
+    """
+    Helper function to convert water level data from UTC to local timezone (EDT)
 
+    Parameters:
+      df (DataFrame): a formatted DF containing water level or high low data
+    Returns:
+      None
+    """
     # Convert to datetime format
     df['Date Time'] = pd.to_datetime(df['Date Time'])
     # Set local timezone to UTC
@@ -98,6 +103,14 @@ def handleTime(df):
 
 
 def finalFormatting(df: DataFrame):
+    """
+    Helper function to reformat and remove extraneous columns from the final report
+
+    Parameters:
+      df (DataFrame): a formatted DF containing water level or high low data
+    Returns:
+      None
+    """
     # Rename columns
     df = df.rename(columns={'Water Level': 'Adjusted Water Level'})
 
