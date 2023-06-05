@@ -40,7 +40,7 @@ if __name__ == '__main__':
         # Prompt for sites input
         while True:
             print("Active Sites:")
-            print(site.name for site in allSites)
+            print(', '.join(site.name for site in allSites))
             sites_input = input(
                 "Enter a list of site names (comma-separated) from the available sites, or press enter for all sites: ")
             if sites_input == "":
