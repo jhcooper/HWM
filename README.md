@@ -33,9 +33,7 @@ reports and plots is sourced from the NOAA and USGS APIs.
       comma-separated list of site names to include in the report. If no input is provided, the report will include all
       available sites.
 
-6. The report will be generated based on the provided inputs and saved to the specified location.
-
-Certainly! Here's an updated version of the dependencies section:
+6. The report will be generated based on the provided inputs and saved to the Yearly Reports folder.
 
 ### Dependencies
 
