@@ -34,6 +34,7 @@ reports and plots is sourced from the NOAA and USGS APIs.
       available sites.
 
 6. The report will be generated based on the provided inputs and saved to the Yearly Reports folder.
+-- NOTE - add what the output is...
 
 ### Dependencies
 
@@ -60,7 +61,8 @@ packages:
 ```
 pip install pandas matplotlib noaa_coops
 ```
-
+-- NOTE - add what the output is...
+   
 Note: The `noaa_coops` package may have additional dependencies that need to be installed as well.
 
 ### License
@@ -74,6 +76,7 @@ Feel free to modify and use the code according to your needs.
 This project was developed as part of a larger system and is based on the work of the contributors to the HWMDB (High
 Water Mark Database) project.
 The HWMDB is project through University of Delaware's Center for Environmental Monitoring & Analysis (CEMA).
+--NOTE add information about funding from the state of delaware
 
 For more information about CEMA and the HWMDB project, visit [cema.udel.edu](https://cema.udel.edu/).
 
