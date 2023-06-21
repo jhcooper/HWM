@@ -21,8 +21,8 @@ if __name__ == '__main__':
         # Prompt for plotting input
         while True:
             plot_input = input("Do you want plots? (yes/no): ").lower()
-            if plot_input in ["yes", "no", ""]:
-                plotting = plot_input == "yes"
+            if plot_input in ["y", "n", ""]:
+                plotting = plot_input == "y"
                 break
             else:
                 print("Invalid input. Please enter 'yes' or 'no'.")
@@ -44,13 +44,28 @@ if __name__ == '__main__':
             sites_input = input(
                 "Enter a list of site names (comma-separated) from the available sites, or press enter for all sites: ")
             if sites_input == "":
-                sites = noaaSites
+                sites = allSites
                 break
             else:
                 sites = [s.strip() for s in sites_input.split(",")]
-                if all(site in allSites for site in sites):
+                matching_sites = [site for site in allSites if site.name in sites]
+
+                if len(matching_sites) == len(sites):
+                    sites = matching_sites
+                    thresholds = [Lewes_Breakwater_Harbor, Murderkill_Bowers, Reedy_Point]
+                    for site in thresholds:
+                        if site not in sites:
+                            sites.append(site)
                     break
                 else:
                     print("Invalid site names. Please enter site names from the provided list.")
-
-        createYearlyReport(year, plotting, keep, sites)
+        while True:
+            keep_input = input(
+                "Would you like the NOAA data to be daily high-low data or hourly water level data? \n Enter: \n 'HL' for high-low \n 'WL' for hourly water level  ").upper()
+            if keep_input in ["HL", "WL"]:
+                product = ('high_low', 'water_level')[keep_input == 'HL']
+                break
+            else:
+                print("Invalid input. Please enter 'HL' or 'WL' ")
+        print(*(site.name for site in sites), sep=', ')
+        createYearlyReport(year, product, plotting, keep, sites)

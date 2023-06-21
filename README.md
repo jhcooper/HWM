@@ -20,18 +20,26 @@ reports and plots is sourced from the NOAA and USGS APIs.
 
 5. Follow the prompts to provide the required inputs:
 
-    - Enter a year (1962-Present): Enter the desired year for the report. The year must be between 1962 and the current
-      year.
+    - Enter a year (1962-Present):
+        - Enter the desired year for the report. The year must be between 1962 and the current
+          year.
 
-    - Do you want plots? (yes/no): Specify whether you want to include plots in the report. Enter "yes" or "no".
+    - Do you want plots? (y/n)
+        - Specify whether you want to include plots in the report. Enter "y" for "yes" or "n" for "no".
 
     - Which temporary files do you want to keep? (A for All/N for None/I for the Isolated Events/Enter for default (
-      All)): Choose which temporary files to keep after generating the report. Enter "A" to keep all files, "N" to keep
-      none, or "I" to keep only the isolated events.
+      All)):
+        - Choose which temporary files to keep after generating the report. Enter "A" to keep all files, "N" to keep
+          none, or "I" to keep only the isolated events.
 
-    - Enter a list of site names (comma-separated) from the available sites, or press enter for all sites: Enter a
-      comma-separated list of site names to include in the report. If no input is provided, the report will include all
-      available sites.
+    - Enter a list of site names (comma-separated) from the available sites, or press enter for all sites
+        - Enter a comma-separated list of site names to include in the report. If no input is provided, the report will
+          include all
+          available sites.
+    - Would you like the NOAA data to be daily high-low data or hourly water level data? \n Enter: 'HL' for high-low or
+      'WL' for hourly water level
+        - Applies to NOAA Sites only. water_level refers to hourly water level data, while high_low refers to the highs
+          and lows for each day.
 
 6. The report will be generated based on the provided inputs and saved to the Yearly Reports folder.
 
@@ -58,7 +66,14 @@ Please make sure to install these dependencies before running the script. You ca
 packages:
 
 ```
-pip install pandas matplotlib noaa_coops
+# Install with pip
+❯ pip install pandas matplotlib noaa_coops
+
+# Install with poetry
+❯ poetry add pandas matplotlib noaa_coops
+
+# Install with conda
+❯ conda install -c conda-forge pandas matplotlib noaa_coops
 ```
 
 Note: The `noaa_coops` package may have additional dependencies that need to be installed as well.
