@@ -7,7 +7,7 @@ from graphing import graph
 from sites import Site, allSites
 
 
-def createReport(site: Site, plotting: bool, year: str):
+def createReport(site: Site, plotting: bool, year: str, product: str):
     """
     Master function to create and save Unfiltered, Filtered, and Isolated Events csvs as well as a png plot of threshold
     exceedance for USGS or NOAA Water Level data
@@ -35,7 +35,7 @@ def createReport(site: Site, plotting: bool, year: str):
     datum = site.datum
     offset = site.offset
     # Retrieve, Convert, Rename, and Reformat Data
-    df = getData(siteID, datum, offset, begin_date, end_date, source, fileName, year)
+    df = getData(siteID, datum, offset, begin_date, end_date, source, fileName, year, product)
 
     if df is None:
         return
@@ -47,12 +47,13 @@ def createReport(site: Site, plotting: bool, year: str):
         createFiltered(df, threshold, fileName, year)
 
 
-def createYearlyReport(year: int, plotting: bool = False, keep: str = "A", sites: [Site] = allSites):
+def createYearlyReport(year: int, product: str, plotting: bool = False, keep: str = "A", sites: [Site] = allSites):
     """
     Generates a yearly report for the specified year.
 
     Parameters:
       year (int): The year for which the report is generated.
+      product (str):  *FOR NOAA DATA ONLY* the product being retrieved (water_level or high_low)
       plotting (bool, optional): Specifies whether to include plots in the report. Default is False.
       keep (str, optional): Specifies which temporary files to keep. Valid values are 'A' (keep all),
             'N' (keep none), or 'I' (keep isolated events). Default is 'A'.
@@ -65,7 +66,7 @@ def createYearlyReport(year: int, plotting: bool = False, keep: str = "A", sites
     for site in sites:
         print("Processing " + site.name + " " + str(year))
         # Generate individual reports for each site
-        createReport(site, plotting, year)
+        createReport(site, plotting, year, product)
 
     # Merge unfiltered data for the year
     unfiltered = mergeUnfiltered(year)
@@ -77,4 +78,3 @@ def createYearlyReport(year: int, plotting: bool = False, keep: str = "A", sites
     deleteTempFolders(keep, year)
 
     print("Done Processing " + str(year))
-

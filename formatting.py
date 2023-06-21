@@ -3,7 +3,8 @@ import pandas as pd
 import os
 
 
-def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileName: str, stationID: str, year: int):
+def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileName: str, stationID: str, year: int,
+                  product: str):
     """
     Helper function to universalize formatting and column naming for USGS and NOAA data, as well as localize timezone
     to EDT. Creates and saves 'filename_Unfiltered.csv' in 'Unfiltered_Data' folder, which holds all from the given
@@ -13,6 +14,8 @@ def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileNam
       df (DataFrame): the csv file of the data, in pandas DF form
       source (str): the data source (USGS or NOAA)
       fileName (str):  the location name and year (location_year)
+      product (str): *FOR NOAA DATA ONLY* the product being retrieved (water_level or high_low)
+
     Returns:
        df (DataFrame): the csv file of the data, in pandas DF form, now universally formatted and localized
     """
@@ -47,27 +50,33 @@ def formatAndSave(df: DataFrame, source: str, offset: float, datum: str, fileNam
         handleTime(df)
 
     else:
+
+        if product == "water_level":
+            df['Date Time'] = df.index
+            df.rename(columns={'water_level': 'Water Level'}, inplace=True)
+        else:
+            # Fill missing High-High values and dates with High counterparts
+            df['date_time_HH'].fillna(df['date_time_H'].combine_first(df['date_time_L']), inplace=True)
+            df['HH_water_level'].fillna(df['H_water_level'].combine_first(df['L_water_level']), inplace=True)
+
+            # Rename Water level and DateTime Columns
+            df.rename(columns={'date_time_HH': 'Date Time', 'HH_water_level': 'Water Level'}, inplace=True)
+
+            # Remove unneeded columns
+            df.drop(
+                columns={'date_time_H', 'H_water_level', 'date_time_L', 'L_water_level', 'date_time_LL',
+                         'LL_water_level', },
+                inplace=True)
         # Add Site ID and Source columns
         df["SiteID"] = stationID
         df["Source"] = source
-
-        # Fill missing High-High values and dates with High counterparts
-        df['date_time_HH'].fillna(df['date_time_H'].combine_first(df['date_time_L']), inplace=True)
-        df['HH_water_level'].fillna(df['H_water_level'].combine_first(df['L_water_level']), inplace=True)
-
-        # Rename Water level and DateTime Columns
-        df.rename(columns={'date_time_HH': 'Date Time', 'HH_water_level': 'Water Level'}, inplace=True)
-
-        # Remove unneeded columns
-        df.drop(
-            columns={'date_time_H', 'H_water_level', 'date_time_L', 'L_water_level', 'date_time_LL',
-                     'LL_water_level', },
-            inplace=True)
         # Revert indexing from DateTime to linear numeric (0,1,2,3,...)
         df.index = pd.RangeIndex(start=0, stop=len(df))
 
         # Perform timezone conversion to EDT
+
         handleTime(df)
+
     df['Measured Water Level'] = df['Water Level']
     df['Water Level'] = df['Water Level'].apply(lambda x: round(x + offset, 2))
     df['VDatum'] = datum
