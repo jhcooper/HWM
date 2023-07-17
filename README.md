@@ -89,8 +89,9 @@ Feel free to modify and use the code according to your needs.
 
 This project was developed as part of a larger system and is based on the work of the contributors to the HWMDB (High
 Water Mark Database) project.
-The HWMDB is project through University of Delaware's Center for Environmental Monitoring & Analysis (CEMA).
---NOTE add information about funding from the state of delaware
+The HWMDB is project through University of Delaware's Center for Environmental Monitoring & Analysis (CEMA) and is a collaborative effort between the Delaware Geological Survey (DGS) and CEMA.
+
+This project was funded using Federal funds under awards NA14OAR4170087 from the Delaware Sea Grant Program through the National Sea Grant College Program, National Oceanic and Atmospheric Administration (NOAA), U.S. Department of Commerce.
 
 For more information about CEMA and the HWMDB project, visit [cema.udel.edu](https://cema.udel.edu/).
 
