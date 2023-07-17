@@ -76,7 +76,6 @@ packages:
 # Install with conda
 ❯ conda install -c conda-forge pandas matplotlib noaa_coops
 ```
--- NOTE - add what the output is...
    
 Note: The `noaa_coops` package may have additional dependencies that need to be installed as well.
 
